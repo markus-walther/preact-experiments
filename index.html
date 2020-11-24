@@ -2,7 +2,7 @@
   // basic Preact API
   import { h, render } from 'https://unpkg.com/preact@latest?module';
   // Preact hooks
-  import { useState } from 'https://unpkg.com/preact@latest/hooks/dist/hooks.module.js?module';
+  import { useState, useEffect } from 'https://unpkg.com/preact@latest/hooks/dist/hooks.module.js?module';
   // tagged string templates
   import htm from "https://unpkg.com/htm@latest/dist/htm.module.js?module";
 
@@ -38,8 +38,10 @@
 	}
 	update(props, unrender) {
 		let child = props.children;
-		let root = render(unrender ? null : child, this.shadow);
-		if (unrender && root) root.remove();
+		render(unrender ? null : child, this.shadow);
+                if (unrender) {
+                   this.__P.remove();
+                }
 	}
 	render() {}
   }
@@ -49,7 +51,12 @@
         // init component-local state
         const [time, setTime] = useState(formattedTimeNow());
         // set periodic state changer in motion
-        DigitalClock.timer = setInterval( () => setTime(formattedTimeNow()), ONE_SECOND );
+        useEffect(() => {
+        // effect after every render:
+        const timer = setInterval( () => setTime(formattedTimeNow()), ONE_SECOND );
+        // undo effect - after every render *and* on component unmount (which is what we're after here)
+        return () => clearInterval(timer);
+        });
         // extract time components ...
         const [hours, minutes, seconds] = time.split(':');
         // ... in order to instantiate formatted time UI
@@ -68,12 +75,20 @@
 			     }
                            </style>`;
 
-        return html`<${Shadow}>${Style}<span class="hours">${hours}</span>:<span class="mins">${minutes}</span>:<span class="secs">${seconds}</span>.</${Shadow}>`;
+        return html`<p><${Shadow}>${Style}<span class="hours">${hours}</span>:<span class="mins">${minutes}</span>:<span class="secs">${seconds}</span>.</${Shadow}></p>`;
   };
 
   // *define* a pure functional component: props |-> virtual DOM:
   // we can have variable tag names, too!
-  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p><span>It is</span></p><p><${DigitalClock}/></p>`;
+  const MyComponent = ({name, heading = 'h1'}) => {
+       const [withClock, setClock] = useState(true);
+
+       const handleClick = ({target:{checked}}) => setClock(!checked);
+
+       return html`<${heading}>Hello ${name}!</${heading}>
+           <label>no clock<input type="checkbox" onClick=${handleClick}/></label>
+           <p class="cl"><span>It is</span></p><${withClock ? DigitalClock : 'br'}/>`;
+  };
 
   // parametrized styling
   const Styling = ({paragraphPadding='0 1em'}) => html`<style>
@@ -85,6 +100,18 @@
     span {
     color: #fff;
     background: #000;
+    }
+
+    label {
+      float:left;
+    }
+
+    .cl {
+    clear: left;
+    }
+
+    br {
+    display: none;
     }
   </style>`;
 
