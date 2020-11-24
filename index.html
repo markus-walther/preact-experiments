@@ -21,8 +21,15 @@
   // we can have variable tag names, too!
   const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p>It is </p><${DigitalClock}/>`;
 
+  const Styling = () => html`<style>
+    p {
+    float: left;
+    padding-left: .2em;
+    }
+  </style>`;
+
   // *instantiate*
-  const App = html`<${MyComponent} name=${'world'} heading="h2"/>`;
+  const App = html`<${Styling}/><${MyComponent} name=${'world'} heading="h2"/>`;
 
   // render the app under <body>
   render(App, document.body);
