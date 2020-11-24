@@ -18,6 +18,32 @@
 
   // components:
 
+  // Shadow Root component, modified from https://github.com/developit/preact-shadow-root/blob/master/preact-shadow-root.js,
+  // using issue #6 and PR #7 fixes
+
+  class Shadow {
+	shouldComponentUpdate(nextProps) {
+		this.update(nextProps);
+		return false;
+	}
+	componentDidMount() {
+		let parent = this.__P;
+		if (parent) {
+			this.shadow = parent.attachShadow({ mode: 'open' });
+			this.update(this.props);
+		}
+	}
+	componentWillUnmount() {
+		this.update(this.props, true);
+	}
+	update(props, unrender) {
+		let child = props.children;
+		let root = render(unrender ? null : child, this.shadow);
+		if (unrender && root) root.remove();
+	}
+	render() {}
+  }
+
   // use *hooks* to have stateful functional components
   const DigitalClock = () => {
         // init component-local state
@@ -27,23 +53,43 @@
         // extract time components ...
         const [hours, minutes, seconds] = time.split(':');
         // ... in order to instantiate formatted time UI
-        return html`<span>${hours}</span>:<span>${minutes}</span>:<span>${seconds}</span>.`;
+  // with encapsulated style
+  const Style = html `<style>
+    .hours {
+    color: red;
+    }
+
+    .mins {
+       color: green;
+    }
+
+    .secs {
+    color: blue;
+    }
+  </style>`;
+
+        return html`<${Shadow}>${Style}<span class="hours">${hours}</span>:<span class="mins">${minutes}</span>:<span class="secs">${seconds}</span>.</${Shadow}>`;
   };
 
   // *define* a pure functional component: props |-> virtual DOM:
   // we can have variable tag names, too!
-  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p>It is <${DigitalClock}/></p>`;
+  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p><span>It is</span></p><p><${DigitalClock}/></p>`;
 
   // parametrized styling
-  const Styling = ({paragraphPaddingLeft='1em'}) => html`<style>
+  const Styling = ({paragraphPadding='0 1em'}) => html`<style>
     p {
     float: left;
-    padding-left: ${paragraphPaddingLeft};
+    padding: ${paragraphPadding};
+    }
+
+    span {
+    color: #fff;
+    background: #000;
     }
   </style>`;
 
   // *instantiate*
-  const App = html`<${Styling} paragraphPaddingLeft="0"/><${MyComponent} name=${'world'} heading="h2"/>`;
+  const App = html`<${Styling} paragraphPadding="0 .1em"/><${MyComponent} name=${'world'} heading="h2"/>`;
 
   // render the app under <body>
   render(App, document.body);
