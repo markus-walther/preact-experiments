@@ -9,27 +9,41 @@
   // initialize htm with Preact's h(yperhtml) function ~ React's createElement
   const html = htm.bind(h);
 
+  // constants
+  const ONE_SECOND = 1000; // milliseconds
+
+  // helper functions
+
+  const formattedTimeNow = () => new Date().toLocaleTimeString();
+
+  // components:
+
   // use *hooks* to have stateful functional components
   const DigitalClock = () => {
-        const [time, setTime] = useState(new Date().toLocaleTimeString());
-        DigitalClock.timer = setInterval( () => setTime(new Date().toLocaleTimeString()), 1000 );
+        // init component-local state
+        const [time, setTime] = useState(formattedTimeNow());
+        // set periodic state changer in motion
+        DigitalClock.timer = setInterval( () => setTime(formattedTimeNow()), ONE_SECOND );
+        // extract time components ...
         const [hours, minutes, seconds] = time.split(':');
-        return html`<p><span>${hours}</span>:<span>${minutes}</span>:<span>${seconds}</span>.</p>`;
+        // ... in order to instantiate formatted time UI
+        return html`<span>${hours}</span>:<span>${minutes}</span>:<span>${seconds}</span>.`;
   };
 
   // *define* a pure functional component: props |-> virtual DOM:
   // we can have variable tag names, too!
-  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p>It is </p><${DigitalClock}/>`;
+  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p>It is <${DigitalClock}/></p>`;
 
-  const Styling = () => html`<style>
+  // parametrized styling
+  const Styling = ({paragraphPaddingLeft='1em'}) => html`<style>
     p {
     float: left;
-    padding-left: .2em;
+    padding-left: ${paragraphPaddingLeft};
     }
   </style>`;
 
   // *instantiate*
-  const App = html`<${Styling}/><${MyComponent} name=${'world'} heading="h2"/>`;
+  const App = html`<${Styling} paragraphPaddingLeft="0"/><${MyComponent} name=${'world'} heading="h2"/>`;
 
   // render the app under <body>
   render(App, document.body);
