@@ -53,20 +53,20 @@
         // extract time components ...
         const [hours, minutes, seconds] = time.split(':');
         // ... in order to instantiate formatted time UI
-  // with encapsulated style
-  const Style = html `<style>
-    .hours {
-    color: red;
-    }
+        // ... with encapsulated style (note outer <span> styling does not affect inner styling and vice versa!)
+        const Style = html `<style>
+                             .hours {
+			     color: red;
+			     }
 
-    .mins {
-       color: green;
-    }
+			     .mins {
+			     color: green;
+			     }
 
-    .secs {
-    color: blue;
-    }
-  </style>`;
+			     .secs {
+			     color: blue;
+			     }
+                           </style>`;
 
         return html`<${Shadow}>${Style}<span class="hours">${hours}</span>:<span class="mins">${minutes}</span>:<span class="secs">${seconds}</span>.</${Shadow}>`;
   };
