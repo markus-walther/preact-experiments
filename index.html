@@ -7,9 +7,13 @@
   // initialize htm with Preact's h(yperhtml) function ~ React's createElement
   const html = htm.bind(h);
 
-  // a pure functional component: props |-> virtual DOM
-  const App = ({name}) => html`<h1>Hello ${name}!</h1>`;
+  // *define* a pure functional component: props |-> virtual DOM:
+  // we can have variable tag names, too!
+  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}>`;
 
-  // render an instantiated version of our component under <body>
-  render(html`<${App} name="World" />`, document.body);
+  // *instantiate*
+  const App = html`<${MyComponent} name=${'world'} heading="h2"/>`;
+
+  // render the app under <body>
+  render(App, document.body);
 </script>
