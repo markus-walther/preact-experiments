@@ -1,15 +1,25 @@
 <script type="module">
   // basic Preact API
-  import { h, Component, render } from 'https://unpkg.com/preact?module';
+  import { h, render } from 'https://unpkg.com/preact@latest?module';
+  // Preact hooks
+  import { useState } from 'https://unpkg.com/preact@latest/hooks/dist/hooks.module.js?module';
   // tagged string templates
-  import htm from 'https://unpkg.com/htm?module';
+  import htm from "https://unpkg.com/htm@latest/dist/htm.module.js?module";
 
   // initialize htm with Preact's h(yperhtml) function ~ React's createElement
   const html = htm.bind(h);
 
+  // use *hooks* to have stateful functional components
+  const DigitalClock = () => {
+        const [time, setTime] = useState(new Date().toLocaleTimeString());
+        DigitalClock.timer = setInterval( () => setTime(new Date().toLocaleTimeString()), 1000 );
+        const [hours, minutes, seconds] = time.split(':');
+        return html`<p><span>${hours}</span>:<span>${minutes}</span>:<span>${seconds}</span>.</p>`;
+  };
+
   // *define* a pure functional component: props |-> virtual DOM:
   // we can have variable tag names, too!
-  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}>`;
+  const MyComponent = ({name, heading = 'h1'}) => html`<${heading}>Hello ${name}!</${heading}><p>It is </p><${DigitalClock}/>`;
 
   // *instantiate*
   const App = html`<${MyComponent} name=${'world'} heading="h2"/>`;
